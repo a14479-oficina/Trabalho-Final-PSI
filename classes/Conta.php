@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../traits/HistoricoTrait.php';
-require_once __DIR__ . '/ContaCorrente.php';
-require_once __DIR__ . '/ContaPoupanca.php';
+
+// Not loaded here - loaded lazily in factory() to avoid circular deps
 
 abstract class Conta
 {
@@ -78,6 +78,7 @@ abstract class Conta
     private static function factory(array $dados): self
     {
         if ($dados['tipo_conta'] === 'poupanca') {
+            require_once __DIR__ . '/ContaPoupanca.php';
             return new ContaPoupanca(
                 (int)$dados['id'],
                 (int)$dados['utilizador_id'],
@@ -86,6 +87,7 @@ abstract class Conta
                 (float)$dados['saldo']
             );
         }
+        require_once __DIR__ . '/ContaCorrente.php';
         return new ContaCorrente(
             (int)$dados['id'],
             (int)$dados['utilizador_id'],
