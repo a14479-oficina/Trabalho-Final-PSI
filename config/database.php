@@ -8,7 +8,7 @@ class Database {
     private function __construct() {
         try {
             $this->conexao = new PDO(
-                "mysql:host=" . DB_HOST . ";port=3306;dbname=" . DB_NAME . ";charset=utf8mb4",
+                "pgsql:host=" . DB_HOST . ";port=5432;dbname=" . DB_NAME,
                 DB_USER,
                 DB_PASS,
                 [
@@ -23,7 +23,6 @@ class Database {
             echo '<p><strong>Host:</strong> ' . DB_HOST . '</p>';
             echo '<p><strong>Base de dados:</strong> ' . DB_NAME . '</p>';
             echo '<p><strong>Utilizador:</strong> ' . DB_USER . '</p>';
-            echo '<hr><p><strong>Solução:</strong> Vai ao painel da InfinityFree → MySQL Databases e verifica o hostname correto. Depois atualiza <code>config/env.php</code>.</p>';
             exit;
         }
     }
