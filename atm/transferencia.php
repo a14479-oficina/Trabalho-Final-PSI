@@ -1,74 +1,58 @@
 <?php
-require_once __DIR__ . '/../config/init.php';
-
+session_start();
 if (!isset($_SESSION['conta_id'])) {
     header('Location: index.php');
     exit;
 }
 
-$pdo     = Database::getConexao();
-$erro    = '';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../classes/Conta.php';
+require_once __DIR__ . '/../traits/HistoricoTrait.php';
+
+$conta = Conta::buscarPorId($_SESSION['conta_id']);
+if (!$conta) {
+    header('Location: index.php');
+    exit;
+}
+
 $sucesso = '';
+$erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $contaDestino = trim($_POST['conta_destino'] ?? '');
-    $valor        = str_replace(',', '.', $_POST['valor'] ?? '');
-    $valor        = (float) $valor;
+    $conta_destino_numero = $_POST['conta_destino'] ?? '';
+    $valor = (float) ($_POST['valor'] ?? 0);
 
-    if ($contaDestino === '' || $valor <= 0) {
-        $erro = 'Preencha o número da conta de destino e o valor.';
-    } elseif ($contaDestino === $_SESSION['conta_num']) {
+    if ($valor <= 0 || empty($conta_destino_numero)) {
+        $erro = 'Preencha todos os campos corretamente.';
+    } elseif ($conta->getSaldo() < $valor) {
+        $erro = 'Saldo insuficiente.';
+    } elseif ($conta_destino_numero === $conta->getNumeroConta()) {
         $erro = 'Não pode transferir para a mesma conta.';
     } else {
-        try {
-            $stmt = $pdo->prepare("SELECT id FROM contas WHERE numero_conta = :num");
-            $stmt->execute([':num' => $contaDestino]);
-            $destino = $stmt->fetch();
+        $conta_destino = Conta::buscarPorNumero($conta_destino_numero);
+        if (!$conta_destino) {
+            $erro = 'Conta de destino não encontrada.';
+        } else {
+            $db = Database::getConnection();
+            $db->beginTransaction();
+            try {
+                $conta->debitar($valor);
+                $conta_destino->creditar($valor);
 
-            if (!$destino) {
-                $erro = 'Conta de destino não encontrada.';
-            } else {
-                $pdo->beginTransaction();
-
-                $stmt = $pdo->prepare(
-                    "UPDATE contas SET saldo = saldo - :valor WHERE id = :id AND saldo >= :valor2"
+                $conta->registarTransacao(
+                    $conta->getId(),
+                    'transferencia',
+                    $valor,
+                    $conta_destino->getId()
                 );
-                $stmt->execute([
-                    ':valor'  => $valor,
-                    ':id'     => $_SESSION['conta_id'],
-                    ':valor2' => $valor
-                ]);
 
-                if ($stmt->rowCount() === 0) {
-                    $pdo->rollBack();
-                    $erro = 'Saldo insuficiente.';
-                } else {
-                    $stmt = $pdo->prepare(
-                        "UPDATE contas SET saldo = saldo + :valor WHERE id = :id"
-                    );
-                    $stmt->execute([
-                        ':valor' => $valor,
-                        ':id'    => $destino['id']
-                    ]);
-
-                    $stmt = $pdo->prepare(
-                        "INSERT INTO transacoes (conta_origem_id, conta_destino_id, tipo_transacao, valor)
-                         VALUES (:origem, :destino, 'transferencia', :valor)"
-                    );
-                    $stmt->execute([
-                        ':origem'  => $_SESSION['conta_id'],
-                        ':destino' => $destino['id'],
-                        ':valor'   => $valor
-                    ]);
-
-                    $pdo->commit();
-                    $sucesso = "Transferência de " . number_format($valor, 2, ',', ' ') .
-                               " € para conta $contaDestino realizada com sucesso!";
-                }
+                $db->commit();
+                $sucesso = 'Transferência de <strong>' . number_format($valor, 2, ',', '.') . ' €</strong> realizada com sucesso!';
+                $conta = Conta::buscarPorId($_SESSION['conta_id']);
+            } catch (\Exception $e) {
+                $db->rollBack();
+                $erro = 'Erro ao processar transferência.';
             }
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $erro = 'Erro ao processar transferência.';
         }
     }
 }
@@ -77,37 +61,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Transferência | DevBank</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBank - Transferência</title>
+    <link rel="stylesheet" href="../css/atm.css">
 </head>
 <body class="atm-body">
     <div class="atm-screen">
         <div class="atm-header">
-            <h1>Transferência</h1>
+            <h1>DevBank</h1>
+            <p>Saldo Disponível: <strong><?= number_format($conta->getSaldo(), 2, ',', '.') ?> €</strong></p>
         </div>
 
-        <?php if ($sucesso): ?>
-            <div class="atm-success"><?= htmlspecialchars($sucesso) ?></div>
-        <?php endif; ?>
-        <?php if ($erro): ?>
-            <div class="atm-error"><?= htmlspecialchars($erro) ?></div>
-        <?php endif; ?>
+        <div class="atm-display">
+            <h2>Transferência</h2>
 
-        <form method="post" class="atm-form">
-            <div class="atm-input-group">
-                <label for="conta_destino">Conta de Destino</label>
-                <input type="text" id="conta_destino" name="conta_destino"
-                       placeholder="Ex: PT5000010001234567890" required>
-            </div>
-            <div class="atm-input-group">
-                <label for="valor">Valor (€)</label>
-                <input type="text" id="valor" name="valor" placeholder="0,00" inputmode="decimal" required>
-            </div>
-            <button type="submit" class="atm-btn">Transferir</button>
-        </form>
+            <?php if ($sucesso): ?>
+                <div class="atm-success"><?= $sucesso ?></div>
+            <?php endif; ?>
+            <?php if ($erro): ?>
+                <div class="atm-error"><?= htmlspecialchars($erro) ?></div>
+            <?php endif; ?>
 
-        <div class="atm-menu">
-            <a href="menu.php" class="atm-menu-btn">&#9664; Voltar</a>
+            <?php if (!$sucesso): ?>
+            <form method="POST" class="atm-form">
+                <div class="atm-field">
+                    <label>Conta de Destino</label>
+                    <input type="text" name="conta_destino" placeholder="PT000000000000" required>
+                </div>
+                <div class="atm-field">
+                    <label>Valor (€)</label>
+                    <input type="number" name="valor" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="atm-btn">Transferir</button>
+            </form>
+            <?php endif; ?>
+
+            <a href="menu.php" class="atm-btn atm-btn-secondary">Voltar ao Menu</a>
+        </div>
+
+        <div class="atm-footer">
+            <p>Transferências entre contas DevBank</p>
         </div>
     </div>
 </body>

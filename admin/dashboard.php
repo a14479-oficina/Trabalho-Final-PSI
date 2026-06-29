@@ -1,82 +1,41 @@
 <?php
-require_once __DIR__ . '/../config/init.php';
-
+session_start();
 if (!isset($_SESSION['admin_id'])) {
     header('Location: login.php');
     exit;
 }
-
-$pdo = Database::getConexao();
-
-$totalClientes = $pdo->query("SELECT COUNT(*) FROM utilizadores WHERE tipo_utilizador = 'cliente'")->fetchColumn();
-$totalContas   = $pdo->query("SELECT COUNT(*) FROM contas")->fetchColumn();
-$totalCartoes  = $pdo->query("SELECT COUNT(*) FROM cartoes")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard | DevBank</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBank - Dashboard</title>
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0">DevBank — Painel de Administração</span>
-            <span class="text-white"><?= htmlspecialchars($_SESSION['admin_nome']) ?> |
-                <a href="logout.php" class="text-white text-decoration-none">Sair</a>
-            </span>
+    <nav class="navbar">
+        <div class="navbar-brand">DevBank</div>
+        <div class="navbar-user">
+            <span>Olá, <?= htmlspecialchars($_SESSION['admin_nome']) ?></span>
+            <a href="logout.php" class="btn btn-sm btn-danger">Sair</a>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-white bg-info">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Clientes</h5>
-                        <p class="display-6"><?= $totalClientes ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-success">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Contas</h5>
-                        <p class="display-6"><?= $totalContas ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-warning">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Cartões</h5>
-                        <p class="display-6"><?= $totalCartoes ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container">
+        <h1>Dashboard do Administrador</h1>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Gestão de Clientes</div>
-                    <div class="card-body">
-                        <a href="criar_cliente.php" class="btn btn-primary w-100 mb-2">Registar Novo Cliente</a>
-                        <a href="listar_clientes.php" class="btn btn-secondary w-100">Listar Todos os Clientes</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Gestão de Contas e Cartões</div>
-                    <div class="card-body">
-                        <a href="abrir_conta.php" class="btn btn-primary w-100 mb-2">Abrir Nova Conta</a>
-                        <a href="emitir_cartao.php" class="btn btn-secondary w-100">Emitir Cartão</a>
-                    </div>
-                </div>
-            </div>
+        <div class="dashboard-cards">
+            <a href="clientes.php" class="card">
+                <div class="card-icon">&#128100;</div>
+                <div class="card-title">Gerir Clientes</div>
+                <div class="card-desc">Registar e consultar clientes</div>
+            </a>
+            <a href="contas.php" class="card">
+                <div class="card-icon">&#128179;</div>
+                <div class="card-title">Gerir Contas</div>
+                <div class="card-desc">Abrir contas e emitir cartões</div>
+            </a>
         </div>
     </div>
 </body>

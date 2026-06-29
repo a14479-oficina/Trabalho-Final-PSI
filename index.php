@@ -1,55 +1,64 @@
 <?php
 session_start();
 
-if (isset($_SESSION['admin_id'])) {
-    header('Location: admin/dashboard.php');
-    exit;
-}
-if (isset($_SESSION['conta_id'])) {
-    header('Location: atm/menu.php');
-    exit;
+if (isset($_GET['sair'])) {
+    session_destroy();
+    session_start();
 }
 ?>
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>DevBank — Sistema Bancário Modular</title>
-    <link rel="stylesheet" href="assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBank</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628, #1a237e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .container { text-align: center; }
+        .logo { font-size: 48px; font-weight: 700; letter-spacing: 6px; color: #00e5ff; text-shadow: 0 0 20px rgba(0,229,255,0.5); margin-bottom: 10px; }
+        .subtitle { color: #90a4ae; margin-bottom: 40px; letter-spacing: 2px; font-size: 14px; }
+        .cards { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #2a3a6e;
+            border-radius: 16px;
+            padding: 40px;
+            width: 280px;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .card:hover { border-color: #00e5ff; background: rgba(0,229,255,0.08); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card-icon { font-size: 48px; margin-bottom: 15px; }
+        .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+        .card-desc { color: #90a4ae; font-size: 14px; line-height: 1.5; }
+    </style>
 </head>
 <body>
-    <div class="landing">
-        <h1>DevBank</h1>
-        <p>Sistema Bancário Modular</p>
-        <div>
-            <a href="admin/login.php" class="btn">Painel de Administração</a>
-            <a href="atm/index.php" class="btn">Caixa Multibanco</a>
-        </div>
-        <button class="btn btn-creds" onclick="toggleCreds()">Mostrar Credenciais</button>
-        <div id="creds-table" class="creds-hidden creds-box">
-            <h2 style="color:var(--accent-2);margin-bottom:16px;text-align:left">Credenciais de Teste</h2>
-            <div class="creds-section">
-                <h3>Administração</h3>
-                <table>
-                    <tr><th>Email</th><th>Password</th></tr>
-                    <tr><td>admin@devbank.pt</td><td>gpsi12</td></tr>
-                </table>
-            </div>
-            <div class="creds-section">
-                <h3>Multibanco (ATM)</h3>
-                <table>
-                    <tr><th>Cliente</th><th>Cartão</th><th>PIN</th></tr>
-                    <tr><td>Ana Silva</td><td>5044123456789012</td><td>1234</td></tr>
-                    <tr><td>Rui Santos</td><td>5044987654321098</td><td>1234</td></tr>
-                </table>
-            </div>
+    <div class="container">
+        <div class="logo">DevBank</div>
+        <div class="subtitle">Solução Bancária Modular</div>
+        <div class="cards">
+            <a href="admin/login.php" class="card">
+                <div class="card-icon">&#128272;</div>
+                <div class="card-title">Admin</div>
+                <div class="card-desc">Painel de administração para gestão de clientes e contas</div>
+            </a>
+            <a href="atm/index.php" class="card">
+                <div class="card-icon">&#127919;</div>
+                <div class="card-title">Multibanco</div>
+                <div class="card-desc">Simulador de caixa multibanco para operações diárias</div>
+            </a>
         </div>
     </div>
-    <script>
-    function toggleCreds() {
-        var el = document.getElementById('creds-table');
-        el.classList.toggle('creds-hidden');
-    }
-    </script>
 </body>
 </html>

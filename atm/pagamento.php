@@ -1,55 +1,43 @@
 <?php
-require_once __DIR__ . '/../config/init.php';
-
+session_start();
 if (!isset($_SESSION['conta_id'])) {
     header('Location: index.php');
     exit;
 }
 
-$pdo     = Database::getConexao();
-$erro    = '';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../classes/Conta.php';
+require_once __DIR__ . '/../traits/HistoricoTrait.php';
+
+$conta = Conta::buscarPorId($_SESSION['conta_id']);
+if (!$conta) {
+    header('Location: index.php');
+    exit;
+}
+
 $sucesso = '';
+$erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $entidade   = trim($_POST['entidade'] ?? '');
-    $referencia = trim($_POST['referencia'] ?? '');
-    $valor      = str_replace(',', '.', $_POST['valor'] ?? '');
-    $valor      = (float) $valor;
+    $entidade = $_POST['entidade'] ?? '';
+    $referencia = $_POST['referencia'] ?? '';
+    $valor = (float) ($_POST['valor'] ?? 0);
 
-    if ($entidade === '' || $referencia === '' || $valor <= 0) {
-        $erro = 'Preencha Entidade, Referência e Valor.';
+    if ($valor <= 0 || empty($entidade) || empty($referencia)) {
+        $erro = 'Preencha todos os campos corretamente.';
+    } elseif ($conta->getSaldo() < $valor) {
+        $erro = 'Saldo insuficiente.';
     } else {
+        $db = Database::getConnection();
+        $db->beginTransaction();
         try {
-            $pdo->beginTransaction();
-
-            $stmt = $pdo->prepare(
-                "UPDATE contas SET saldo = saldo - :valor WHERE id = :id AND saldo >= :valor2"
-            );
-            $stmt->execute([
-                ':valor'  => $valor,
-                ':id'     => $_SESSION['conta_id'],
-                ':valor2' => $valor
-            ]);
-
-            if ($stmt->rowCount() === 0) {
-                $pdo->rollBack();
-                $erro = 'Saldo insuficiente.';
-            } else {
-                $stmt = $pdo->prepare(
-                    "INSERT INTO transacoes (conta_origem_id, conta_destino_id, tipo_transacao, valor)
-                     VALUES (:origem, NULL, 'transferencia', :valor)"
-                );
-                $stmt->execute([
-                    ':origem' => $_SESSION['conta_id'],
-                    ':valor'  => $valor
-                ]);
-
-                $pdo->commit();
-                $sucesso = "Pagamento de " . number_format($valor, 2, ',', ' ') .
-                           " € à Entidade $entidade / Ref. $referencia realizado.";
-            }
-        } catch (Exception $e) {
-            $pdo->rollBack();
+            $conta->debitar($valor);
+            $conta->registarTransacao($conta->getId(), 'pagamento', $valor);
+            $db->commit();
+            $sucesso = 'Pagamento de <strong>' . number_format($valor, 2, ',', '.') . ' €</strong> realizado com sucesso!';
+            $conta = Conta::buscarPorId($_SESSION['conta_id']);
+        } catch (\Exception $e) {
+            $db->rollBack();
             $erro = 'Erro ao processar pagamento.';
         }
     }
@@ -59,40 +47,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Pagamento | DevBank</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBank - Pagamento</title>
+    <link rel="stylesheet" href="../css/atm.css">
 </head>
 <body class="atm-body">
     <div class="atm-screen">
         <div class="atm-header">
-            <h1>Pagamento de Serviços</h1>
+            <h1>DevBank</h1>
+            <p>Saldo Disponível: <strong><?= number_format($conta->getSaldo(), 2, ',', '.') ?> €</strong></p>
         </div>
 
-        <?php if ($sucesso): ?>
-            <div class="atm-success"><?= htmlspecialchars($sucesso) ?></div>
-        <?php endif; ?>
-        <?php if ($erro): ?>
-            <div class="atm-error"><?= htmlspecialchars($erro) ?></div>
-        <?php endif; ?>
+        <div class="atm-display">
+            <h2>Pagamento de Serviços</h2>
 
-        <form method="post" class="atm-form">
-            <div class="atm-input-group">
-                <label for="entidade">Entidade</label>
-                <input type="text" id="entidade" name="entidade" placeholder="Ex: 12345" required>
-            </div>
-            <div class="atm-input-group">
-                <label for="referencia">Referência</label>
-                <input type="text" id="referencia" name="referencia" placeholder="Ex: 987654321" required>
-            </div>
-            <div class="atm-input-group">
-                <label for="valor">Valor (€)</label>
-                <input type="text" id="valor" name="valor" placeholder="0,00" inputmode="decimal" required>
-            </div>
-            <button type="submit" class="atm-btn">Pagar</button>
-        </form>
+            <?php if ($sucesso): ?>
+                <div class="atm-success"><?= $sucesso ?></div>
+            <?php endif; ?>
+            <?php if ($erro): ?>
+                <div class="atm-error"><?= htmlspecialchars($erro) ?></div>
+            <?php endif; ?>
 
-        <div class="atm-menu">
-            <a href="menu.php" class="atm-menu-btn">&#9664; Voltar</a>
+            <?php if (!$sucesso): ?>
+            <form method="POST" class="atm-form">
+                <div class="atm-field">
+                    <label>Entidade</label>
+                    <input type="text" name="entidade" maxlength="10" required>
+                </div>
+                <div class="atm-field">
+                    <label>Referência</label>
+                    <input type="text" name="referencia" maxlength="20" required>
+                </div>
+                <div class="atm-field">
+                    <label>Valor (€)</label>
+                    <input type="number" name="valor" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="atm-btn">Pagar</button>
+            </form>
+            <?php endif; ?>
+
+            <a href="menu.php" class="atm-btn atm-btn-secondary">Voltar ao Menu</a>
+        </div>
+
+        <div class="atm-footer">
+            <p>Pagamento de serviços - Entidade, Referência e Valor</p>
         </div>
     </div>
 </body>
