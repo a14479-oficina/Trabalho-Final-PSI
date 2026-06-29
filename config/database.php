@@ -18,7 +18,13 @@ class Database {
                 ]
             );
         } catch (PDOException $e) {
-            die("Erro de conexão à base de dados: " . $e->getMessage());
+            echo '<h3>Erro de conexão à base de dados</h3>';
+            echo '<p><strong>Mensagem:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+            echo '<p><strong>Host:</strong> ' . DB_HOST . '</p>';
+            echo '<p><strong>Base de dados:</strong> ' . DB_NAME . '</p>';
+            echo '<p><strong>Utilizador:</strong> ' . DB_USER . '</p>';
+            echo '<hr><p><strong>Solução:</strong> Vai ao painel da InfinityFree → MySQL Databases e verifica o hostname correto. Depois atualiza <code>config/env.php</code>.</p>';
+            exit;
         }
     }
 
