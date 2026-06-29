@@ -1,140 +1,748 @@
-/* =========================================================
-   DEVBANK - THEME ROXO (Millennium-like)
-   ========================================================= */
-
-:root{
-    --bg-1: #0b0420; /* very dark */
-    --bg-2: #1b0630; /* deep purple */
-    --card: #2b0b44; /* card background */
-    --accent: #7a39ff; /* primary purple */
-    --accent-2: #caa7ff; /* light purple */
-    --border: #3e155f;
-    --muted: #cfc7dd;
-    --success: #7ef0c3;
-    --danger: #ff8b8b;
-    --glass: rgba(255,255,255,0.04);
+:root {
+    --bg-primary: #0f0a1e;
+    --bg-secondary: #1a1035;
+    --bg-card: #221644;
+    --bg-card-hover: #2c1a52;
+    --accent: #8750f7;
+    --accent-2: #b794f4;
+    --accent-glow: rgba(135, 80, 247, 0.25);
+    --border: #362556;
+    --text: #e0d9f0;
+    --text-muted: #a89bc2;
+    --text-dim: #7a6b94;
+    --success: #48d9a3;
+    --danger: #f57373;
+    --warning: #f0b34b;
+    --glass: rgba(255, 255, 255, 0.03);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+    --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Global body for ATM & landing */
-body, .atm-body, .landing {
+* { box-sizing: border-box }
+
+body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--muted);
-    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 60%);
-    -webkit-font-smoothing:antialiased;
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
 }
 
+/* ========== TYPOGRAPHY ========== */
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.01em }
+p { line-height: 1.6 }
+
+/* ========== LANDING ========== */
+.landing {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 40px 20px;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(135, 80, 247, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(135, 80, 247, 0.05) 0%, transparent 60%),
+        var(--bg-primary);
+}
+
+.landing h1 {
+    font-size: 4em;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.1em;
+    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.landing > p {
+    color: var(--text-muted);
+    font-size: 1.2em;
+    margin-bottom: 2em;
+}
+
+.landing .btn {
+    display: inline-block;
+    margin: 8px 10px;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.95em;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+}
+
+.landing .btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px var(--accent-glow);
+}
+
+/* ========== ATM BODY ========== */
 .atm-body {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(135, 80, 247, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(135, 80, 247, 0.04) 0%, transparent 50%),
+        var(--bg-primary);
 }
 
-.atm-screen{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)), var(--card);
+.atm-screen {
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px;
+    border-radius: var(--radius);
+    padding: 32px;
     width: 100%;
-    max-width: 480px;
-    box-shadow: 0 10px 40px rgba(30,5,50,0.6), inset 0 2px 6px var(--glass);
+    max-width: 460px;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    animation: fadeIn 0.3s ease;
 }
 
-.atm-header{ text-align:center; margin-bottom:22px; }
-.atm-header h1{ margin:0; font-size:1.9em; color:var(--accent-2); letter-spacing:1px }
-.atm-header p{ margin:6px 0 0; color: #a99be6; font-size:0.95em }
-
-.atm-card-slot{ text-align:center; font-size:2.8em; margin:12px 0; color:var(--accent); }
-
-.atm-form{ display:flex; flex-direction:column; gap:14px }
-.atm-input-group{ display:flex; flex-direction:column; gap:6px }
-.atm-input-group label{ font-size:0.85em; color:#bdaee6; text-transform:uppercase; letter-spacing:1px }
-
-.atm-input-group input, textarea, select{
-    padding:12px 14px;
-    border-radius:10px;
-    border:1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-    color:var(--muted);
-    font-size:1em;
-    outline:none;
-    transition: box-shadow .18s, border-color .18s, transform .08s;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px) }
+    to { opacity: 1; transform: translateY(0) }
 }
-.atm-input-group input:focus{
+
+.atm-header { text-align: center; margin-bottom: 24px }
+
+.atm-header h1 {
+    margin: 0;
+    font-size: 1.6em;
+    color: var(--accent-2);
+    letter-spacing: 0;
+}
+
+.atm-header p {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 0.92em;
+}
+
+/* ========== ATM CARD SLOT ========== */
+.atm-card-slot {
+    text-align: center;
+    font-size: 2.4em;
+    margin: 8px 0 16px;
+    color: var(--accent);
+    opacity: 0.5;
+}
+
+/* ========== ATM FORM ========== */
+.atm-form { display: flex; flex-direction: column; gap: 16px }
+
+.atm-input-group { display: flex; flex-direction: column; gap: 6px }
+
+.atm-input-group label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.atm-input-group input,
+textarea,
+select {
+    padding: 13px 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text);
+    font-size: 1em;
+    font-family: var(--font);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.atm-input-group input:focus,
+textarea:focus,
+select:focus {
     border-color: var(--accent);
-    box-shadow: 0 6px 22px rgba(122,57,255,0.14);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: rgba(0, 0, 0, 0.15);
 }
-.atm-input-group input::placeholder{ color: #8f7fb8 }
 
-.atm-btn{
-    padding:13px 16px;
-    border-radius:10px;
-    background: linear-gradient(180deg, var(--accent) 0%, #3f2fe6 100%);
-    color:white;
-    border:1px solid rgba(255,255,255,0.06);
-    font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-    cursor:pointer; transition: transform .12s, box-shadow .12s;
+.atm-input-group input::placeholder,
+textarea::placeholder {
+    color: var(--text-dim);
 }
-.atm-btn:hover{ transform: translateY(-3px); box-shadow: 0 18px 50px rgba(122,57,255,0.18) }
 
-.atm-error{ background: rgba(255,75,75,0.06); border:1px solid rgba(255,75,75,0.14); color:var(--danger); padding:10px; border-radius:8px }
-.atm-success{ background: rgba(120,240,195,0.06); border:1px solid rgba(120,240,195,0.12); color:var(--success); padding:10px; border-radius:8px }
+/* ========== ATM BUTTON ========== */
+.atm-btn {
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%);
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: var(--font);
+}
 
-.atm-balance-box{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)); border:1px solid var(--border); padding:14px; border-radius:10px; text-align:center }
-.atm-balance-box strong{ color:var(--accent-2); font-size:1.25em }
-.atm-balance-box small{ color:#b9aee6 }
+.atm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-glow);
+}
 
-.atm-subtitle{ color:#bdaee6; font-size:1em; margin:14px 0 8px; text-align:center }
-.atm-info{ text-align:center; color:#9787c9; font-style:italic }
+.atm-btn:active {
+    transform: translateY(0);
+}
 
-.atm-transactions{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px }
-.atm-trans-item{ display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02); border:1px solid var(--border); padding:10px 12px; border-radius:8px }
-.trans-tipo{ color:#d8c8ff; font-weight:700; text-transform:uppercase; font-size:0.82em }
-.trans-valor{ font-family:'Courier New', monospace; font-weight:700; color:var(--accent-2) }
-.trans-debito{ color:#ff9f9f }
-.trans-credito{ color:var(--success) }
-.trans-data{ color:#a89bd1; font-size:0.82em }
+/* ========== MESSAGES ========== */
+.atm-error,
+.atm-success {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    animation: fadeIn 0.25s ease;
+}
 
-.atm-menu{ display:flex; flex-direction:column; gap:10px; margin-top:6px }
-.atm-menu-btn{ display:block; padding:12px 16px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); text-decoration:none; font-size:0.98em; transition: all .16s }
-.atm-menu-btn:hover{ background: rgba(122,57,255,0.06); border-color:var(--accent); color:var(--accent-2); padding-left:22px }
-.menu-icon{ color:var(--accent-2); margin-right:10px }
+.atm-error {
+    background: rgba(245, 115, 115, 0.08);
+    border: 1px solid rgba(245, 115, 115, 0.15);
+    color: var(--danger);
+}
 
-.atm-menu-exit{ border-color: rgba(255,120,120,0.16); color: #ffb0b0 }
-.atm-menu-exit:hover{ background: rgba(120,20,20,0.06); border-color:#ff8b8b }
+.atm-success {
+    background: rgba(72, 217, 163, 0.08);
+    border: 1px solid rgba(72, 217, 163, 0.15);
+    color: var(--success);
+}
 
-.atm-footer{ text-align:center; margin-top:18px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.03) }
-.atm-link{ color:var(--accent-2); text-decoration:none; font-size:0.88em }
-.atm-link:hover{ color:var(--accent) }
+/* ========== BALANCE BOX ========== */
+.atm-balance-box {
+    background: linear-gradient(135deg, rgba(135, 80, 247, 0.08), rgba(0, 0, 0, 0.2));
+    border: 1px solid rgba(135, 80, 247, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 4px;
+}
 
-/* Landing */
-.landing{ display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:60px 20px }
-.landing h1{ font-size:3.2em; letter-spacing:3px; margin-bottom:0.2em; color:var(--accent-2); text-shadow: 0 8px 30px rgba(122,57,255,0.12) }
-.landing p{ color:#b9aee6; margin-bottom:1.8em; font-size:1.15em; max-width:860px }
-.landing .btn{ display:inline-block; margin:10px 12px; padding:14px 42px; background: linear-gradient(180deg, var(--accent) 0%, #5a2df0 100%); color:white; border-radius:10px; font-weight:700; border:1px solid rgba(255,255,255,0.06); text-decoration:none }
-.landing .btn:hover{ box-shadow: 0 26px 70px rgba(122,57,255,0.16); transform: translateY(-3px) }
+.atm-balance-box strong {
+    color: var(--accent-2);
+    font-size: 1.35em;
+    font-weight: 700;
+}
 
-.btn-creds{ background: linear-gradient(180deg, var(--accent) 0%, #3f2fe6 100%) !important; margin-top:20px; cursor:pointer }
-.btn-creds:hover{ box-shadow: 0 26px 70px rgba(122,57,255,0.18) !important; transform: translateY(-3px) }
+.atm-balance-box small {
+    color: var(--text-dim);
+    font-size: 0.82em;
+}
 
-.creds-hidden{ display:none }
-.creds-box{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)), var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; margin-top:16px; max-width:600px; box-shadow:0 10px 40px rgba(30,5,50,0.6), inset 0 2px 6px var(--glass) }
-.creds-section{ margin-bottom:20px }
-.creds-section:last-child{ margin-bottom:0 }
-.creds-section h3{ color:var(--accent-2); margin-bottom:8px; font-size:1em; text-align:left }
-.creds-section table{ width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); border-radius:8px; overflow:hidden }
-.creds-section th,.creds-section td{ padding:8px 12px; text-align:left; border-bottom:1px solid var(--border) }
-.creds-section th{ color:var(--accent-2); text-transform:uppercase; font-size:0.8em; letter-spacing:1px; background:rgba(255,255,255,0.03) }
-.creds-section td{ color:var(--muted) }
+/* ========== SUBTITLE / INFO ========== */
+.atm-subtitle {
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin: 20px 0 12px;
+    text-align: center;
+    font-weight: 600;
+}
 
-/* Small utilities */
-.text-muted{ color:#9a88bf }
-.card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)); border-radius:12px; border:1px solid var(--border); padding:16px }
+.atm-info {
+    text-align: center;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 0.9em;
+}
 
-@media (max-width:520px){
-    .atm-screen{ padding:20px; max-width:360px }
-    .landing h1{ font-size:2.4em }
+/* ========== TRANSACTIONS ========== */
+.atm-transactions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.atm-trans-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s;
+}
+
+.atm-trans-item:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.trans-tipo {
+    color: var(--accent-2);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75em;
+    letter-spacing: 0.06em;
+}
+
+.trans-valor {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--accent-2);
+}
+
+.trans-debito { color: var(--danger) }
+.trans-credito { color: var(--success) }
+
+.trans-data {
+    color: var(--text-dim);
+    font-size: 0.82em;
+}
+
+/* ========== ATM MENU ========== */
+.atm-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.atm-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+    font-family: var(--font);
+}
+
+.atm-menu-btn:hover {
+    background: rgba(135, 80, 247, 0.06);
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+.menu-icon {
+    color: var(--accent);
+    font-size: 0.85em;
+    width: 20px;
+    text-align: center;
+}
+
+.atm-menu-exit {
+    border-color: rgba(245, 115, 115, 0.15);
+    color: var(--danger);
+}
+
+.atm-menu-exit:hover {
+    background: rgba(245, 115, 115, 0.06) !important;
+    border-color: var(--danger) !important;
+}
+
+/* ========== ATM FOOTER ========== */
+.atm-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.atm-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85em;
+    transition: color 0.2s;
+}
+
+.atm-link:hover {
+    color: var(--accent-2);
+}
+
+/* ========== CREDENTIALS TOGGLE ========== */
+.btn-creds {
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%) !important;
+    margin-top: 24px;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+}
+
+.btn-creds:hover {
+    box-shadow: 0 16px 40px var(--accent-glow) !important;
+    transform: translateY(-4px);
+}
+
+.creds-hidden { display: none }
+
+.creds-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 20px;
+    max-width: 600px;
+    box-shadow: var(--shadow);
+    text-align: left;
+    animation: fadeIn 0.3s ease;
+}
+
+.creds-section { margin-bottom: 24px }
+.creds-section:last-child { margin-bottom: 0 }
+
+.creds-section h3 {
+    color: var(--accent-2);
+    margin: 0 0 10px;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+.creds-section table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.creds-section th,
+.creds-section td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9em;
+}
+
+.creds-section th {
+    color: var(--accent-2);
+    text-transform: uppercase;
+    font-size: 0.72em;
+    letter-spacing: 0.08em;
+    background: rgba(135, 80, 247, 0.06);
+}
+
+.creds-section td { color: var(--text) }
+.creds-section tr:last-child td { border-bottom: none }
+
+/* ===================================================================
+   ADMIN STYLES — Purple Theme Overrides for Bootstrap
+   =================================================================== */
+
+/* --- NAVBAR --- */
+.navbar {
+    background: linear-gradient(135deg, #1a1035 0%, #221644 100%) !important;
+    border-bottom: 1px solid var(--border) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 0.7rem 1rem !important;
+}
+
+.navbar-brand {
+    font-weight: 700 !important;
+    font-size: 1.15em !important;
+    color: var(--accent-2) !important;
+    letter-spacing: -0.01em;
+}
+
+.navbar .text-white,
+.navbar a.text-white {
+    color: var(--text-muted) !important;
+    transition: color 0.2s;
+}
+
+.navbar a.text-white:hover {
+    color: var(--accent-2) !important;
+}
+
+/* --- ADMIN LOGIN (no Bootstrap navbar, standalone) --- */
+.bg-light {
+    background: var(--bg-primary) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-light .container {
+    animation: fadeIn 0.3s ease;
+}
+
+.bg-light .card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.bg-light .card-header {
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%) !important;
+    border-bottom: none !important;
+    border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0 !important;
+    color: #fff !important;
+    padding: 18px 20px !important;
+}
+
+.bg-light .card-header h4 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.15em;
+}
+
+.bg-light .card-body {
+    padding: 24px !important;
+}
+
+.bg-light .form-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.82em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.bg-light .form-control {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text) !important;
+    padding: 12px 14px !important;
+    font-family: var(--font);
+    transition: all 0.2s ease;
+}
+
+.bg-light .form-control:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+.bg-light .btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%) !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 12px !important;
+    font-weight: 700 !important;
+    font-family: var(--font);
+    transition: all 0.25s ease !important;
+}
+
+.bg-light .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-glow) !important;
+}
+
+.bg-light a.text-decoration-none {
+    color: var(--text-muted) !important;
+    transition: color 0.2s;
+}
+
+.bg-light a.text-decoration-none:hover {
+    color: var(--accent-2) !important;
+}
+
+.bg-light .alert-danger {
+    background: rgba(245, 115, 115, 0.08);
+    border: 1px solid rgba(245, 115, 115, 0.15);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+}
+
+/* --- ADMIN DASHBOARD & PAGES --- */
+body:not(.atm-body):not(.landing):not(.bg-light) {
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    background: rgba(135, 80, 247, 0.06) !important;
+    border-bottom: 1px solid var(--border) !important;
+    color: var(--accent-2);
+    font-weight: 700;
+    padding: 14px 18px !important;
+}
+
+.card-body {
+    padding: 20px !important;
+}
+
+/* Stat cards on dashboard */
+.card.bg-info,
+.card.bg-success,
+.card.bg-warning {
+    border: none !important;
+}
+
+.card.bg-info {
+    background: linear-gradient(135deg, #3a6be0 0%, #2a53b0 100%) !important;
+}
+
+.card.bg-success {
+    background: linear-gradient(135deg, var(--success) 0%, #2db884 100%) !important;
+}
+
+.card.bg-warning {
+    background: linear-gradient(135deg, var(--warning) 0%, #d4912e 100%) !important;
+}
+
+.card.bg-info .card-title,
+.card.bg-success .card-title,
+.card.bg-warning .card-title {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 600;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.card.bg-info .display-6,
+.card.bg-success .display-6,
+.card.bg-warning .display-6 {
+    color: #fff !important;
+    font-weight: 800;
+    margin: 8px 0 0;
+}
+
+/* Dashboard buttons */
+.btn {
+    border-radius: var(--radius-sm) !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    font-family: var(--font);
+    transition: all 0.2s ease !important;
+    border: none !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #6a3de8 100%) !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--accent-glow) !important;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--accent-2) !important;
+    border-color: var(--accent) !important;
+}
+
+/* Table */
+.table {
+    color: var(--text) !important;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: rgba(135, 80, 247, 0.08) !important;
+    color: var(--accent-2) !important;
+    border-bottom: 1px solid var(--border) !important;
+    text-transform: uppercase;
+    font-size: 0.75em;
+    letter-spacing: 0.06em;
+    padding: 12px 14px !important;
+}
+
+.table td {
+    border-color: var(--border) !important;
+    padding: 10px 14px !important;
+    vertical-align: middle;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.table-bordered {
+    border-color: var(--border) !important;
+}
+
+.table-responsive {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+}
+
+/* Alerts */
+.alert-success {
+    background: rgba(72, 217, 163, 0.08) !important;
+    border: 1px solid rgba(72, 217, 163, 0.15) !important;
+    color: var(--success) !important;
+    border-radius: var(--radius-sm);
+}
+
+.alert-danger {
+    background: rgba(245, 115, 115, 0.08) !important;
+    border: 1px solid rgba(245, 115, 115, 0.15) !important;
+    color: var(--danger) !important;
+    border-radius: var(--radius-sm);
+}
+
+.alert-info {
+    background: rgba(135, 80, 247, 0.08) !important;
+    border: 1px solid rgba(135, 80, 247, 0.15) !important;
+    color: var(--accent-2) !important;
+    border-radius: var(--radius-sm);
+}
+
+/* Form select for admin */
+.form-select {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text) !important;
+    padding: 12px 14px !important;
+    font-family: var(--font);
+    transition: all 0.2s ease;
+}
+
+.form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+
+.form-check-label {
+    color: var(--text-muted);
+}
+
+.form-text {
+    color: var(--text-dim) !important;
+    font-size: 0.82em;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 520px) {
+    .atm-screen { padding: 24px; max-width: 100% }
+    .landing h1 { font-size: 2.6em }
+    .landing .btn { padding: 14px 32px; display: block; margin: 8px auto; max-width: 280px }
+    .creds-box { padding: 20px; max-width: 100% }
 }
