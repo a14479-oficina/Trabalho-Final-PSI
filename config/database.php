@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/env.php';
+
 class Database {
     private static $instancia = null;
     private $conexao;
@@ -6,9 +8,9 @@ class Database {
     private function __construct() {
         try {
             $this->conexao = new PDO(
-"mysql:host=sql309.infinityfree.com;port=3306;dbname=if0_42295620_devbank;charset=utf8mb4",
-            "if0_42295620",
-            "9jfEAEMpuMefDb",
+                "mysql:host=" . DB_HOST . ";port=3306;dbname=" . DB_NAME . ";charset=utf8mb4",
+                DB_USER,
+                DB_PASS,
                 [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
