@@ -6,9 +6,9 @@ class Database {
     private function __construct() {
         try {
             $this->conexao = new PDO(
-"mysql:host=sql106.infinityfree.com;port=3306;dbname=if0_42204387_devbank_db;charset=utf8mb4",
-            "if0_42204387",
-            "devbank123",
+"mysql:host=sql309.infinityfree.com;port=3306;dbname=if0_42295620_devbank;charset=utf8mb4",
+            "if0_42295620",
+            "9jfEAEMpuMefDb",
                 [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
