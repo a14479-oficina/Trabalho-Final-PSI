@@ -1,34 +1,20 @@
 <?php
-
 require_once __DIR__ . '/Conta.php';
 
 final class ContaPoupanca extends Conta
 {
-    private const LIMITE_POR_LEVANTAMENTO = 500.00;
-    private const LIMITE_DIARIO = 1000.00;
+    private float $limiteLevantamento = 500.00;
 
-    public function podeLevantar(float $valor): bool
+    public function __construct(int $utilizadorId, string $numeroConta, float $saldo = 0.00)
     {
-        if ($valor > self::LIMITE_POR_LEVANTAMENTO) {
-            return false;
-        }
-
-        $totalHoje = $this->totalLevantamentosHoje();
-        if (($totalHoje + $valor) > self::LIMITE_DIARIO) {
-            return false;
-        }
-
-        return $this->saldo >= $valor;
+        parent::__construct($utilizadorId, $numeroConta, 'poupanca', $saldo);
     }
 
-    private function totalLevantamentosHoje(): float
+    public function levantar(PDO $db, float $valor): bool
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare(
-            "SELECT COALESCE(SUM(valor), 0) FROM transacoes
-             WHERE conta_origem_id = :conta_id AND tipo_transacao = 'levantamento' AND DATE(data_movimento) = CURRENT_DATE"
-        );
-        $stmt->execute([':conta_id' => $this->id]);
-        return (float) $stmt->fetchColumn();
+        if ($valor > $this->limiteLevantamento) {
+            return false;
+        }
+        return parent::levantar($db, $valor);
     }
 }

@@ -1,32 +1,29 @@
 <?php
-
 require_once __DIR__ . '/Utilizador.php';
 
 class Cliente extends Utilizador
 {
-    public function __construct(int $id, string $nome, ?string $nif, string $email, string $palavra_passe, string $tipo_utilizador)
+    private ?string $nif;
+
+    public function __construct(string $nome, string $email, string $palavraPasse, ?string $nif = null)
     {
-        parent::__construct($id, $nome, $nif, $email, $palavra_passe, $tipo_utilizador);
+        parent::__construct($nome, $email, $palavraPasse, 'cliente');
+        $this->nif = $nif;
     }
 
-    public static function listarTodos(): array
+    public function getNif(): ?string
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare(
-            "SELECT * FROM utilizadores WHERE tipo_utilizador = 'cliente' ORDER BY nome"
-        );
-        $stmt->execute();
-        return $stmt->fetchAll();
+        return $this->nif;
     }
 
-    public static function buscarPorId(int $id): ?array
+    public function salvar(PDO $db): bool
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare(
-            "SELECT * FROM utilizadores WHERE id = :id AND tipo_utilizador = 'cliente'"
-        );
-        $stmt->execute([':id' => $id]);
-        $dados = $stmt->fetch();
-        return $dados ?: null;
+        $hash = password_hash($this->palavraPasse, PASSWORD_DEFAULT);
+        $stmt = $db->prepare("INSERT INTO utilizadores (nome, nif, email, palavra_passe, tipo_utilizador) VALUES (:nome, :nif, :email, :palavra_passe, 'cliente')");
+        $stmt->bindParam(':nome', $this->nome);
+        $stmt->bindParam(':nif', $this->nif);
+        $stmt->bindParam(':email', $this->email);
+        $stmt->bindParam(':palavra_passe', $hash);
+        return $stmt->execute();
     }
 }

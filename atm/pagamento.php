@@ -5,40 +5,55 @@ if (!isset($_SESSION['conta_id'])) {
     exit;
 }
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../classes/Database.php';
 require_once __DIR__ . '/../classes/Conta.php';
-require_once __DIR__ . '/../traits/HistoricoTrait.php';
+require_once __DIR__ . '/../classes/HistoricoTrait.php';
 
-$conta = Conta::buscarPorId($_SESSION['conta_id']);
-if (!$conta) {
-    header('Location: index.php');
-    exit;
-}
-
-$sucesso = '';
+$db = Database::conectar();
+$contaId = $_SESSION['conta_id'];
 $erro = '';
+$sucesso = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $entidade = $_POST['entidade'] ?? '';
-    $referencia = $_POST['referencia'] ?? '';
-    $valor = (float) ($_POST['valor'] ?? 0);
+    $tipoPagamento = $_POST['tipo_pagamento'] ?? '';
+    $referencia = trim($_POST['referencia'] ?? '');
+    $valor = str_replace(',', '.', $_POST['valor'] ?? '0');
+    $valor = (float)$valor;
 
-    if ($valor <= 0 || empty($entidade) || empty($referencia)) {
+    $tiposValidos = ['Luz', 'Água', 'Lixo'];
+
+    if (!in_array($tipoPagamento, $tiposValidos) || empty($referencia) || $valor <= 0) {
         $erro = 'Preencha todos os campos corretamente.';
-    } elseif ($conta->getSaldo() < $valor) {
-        $erro = 'Saldo insuficiente.';
     } else {
-        $db = Database::getConnection();
-        $db->beginTransaction();
         try {
-            $conta->debitar($valor);
-            $conta->registarTransacao($conta->getId(), 'pagamento', $valor);
-            $db->commit();
-            $sucesso = 'Pagamento de <strong>' . number_format($valor, 2, ',', '.') . ' €</strong> realizado com sucesso!';
-            $conta = Conta::buscarPorId($_SESSION['conta_id']);
-        } catch (\Exception $e) {
+            $db->beginTransaction();
+
+            $stmt = $db->prepare("SELECT saldo FROM contas WHERE id = :id FOR UPDATE");
+            $stmt->bindParam(':id', $contaId, PDO::PARAM_INT);
+            $stmt->execute();
+            $conta = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$conta || $conta['saldo'] < $valor) {
+                $db->rollBack();
+                $erro = 'Saldo insuficiente para realizar o pagamento.';
+            } else {
+                $stmtUpd = $db->prepare("UPDATE contas SET saldo = saldo - :valor WHERE id = :id");
+                $stmtUpd->bindParam(':valor', $valor);
+                $stmtUpd->bindParam(':id', $contaId, PDO::PARAM_INT);
+                $stmtUpd->execute();
+
+                $descricao = 'Pagamento - ' . $tipoPagamento . ' Ref: ' . $referencia;
+                $stmtTrans = $db->prepare("INSERT INTO transacoes (conta_origem_id, tipo_transacao, valor) VALUES (:id, 'transferencia', :valor)");
+                $stmtTrans->bindParam(':id', $contaId, PDO::PARAM_INT);
+                $stmtTrans->bindParam(':valor', $valor);
+                $stmtTrans->execute();
+
+                $db->commit();
+                $sucesso = 'Pagamento de ' . $tipoPagamento . ' no valor de ' . number_format($valor, 2, ',', ' ') . ' € realizado com sucesso!';
+            }
+        } catch (Exception $e) {
             $db->rollBack();
-            $erro = 'Erro ao processar pagamento.';
+            $erro = 'Erro ao processar pagamento: ' . $e->getMessage();
         }
     }
 }
@@ -48,49 +63,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevBank - Pagamento</title>
-    <link rel="stylesheet" href="../css/atm.css">
+    <title>DevBank - Pagamentos</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="atm-body">
-    <div class="atm-screen">
-        <div class="atm-header">
-            <h1>DevBank</h1>
-            <p>Saldo Disponível: <strong><?= number_format($conta->getSaldo(), 2, ',', '.') ?> €</strong></p>
-        </div>
-
-        <div class="atm-display">
-            <h2>Pagamento de Serviços</h2>
-
-            <?php if ($sucesso): ?>
-                <div class="atm-success"><?= $sucesso ?></div>
-            <?php endif; ?>
-            <?php if ($erro): ?>
-                <div class="atm-error"><?= htmlspecialchars($erro) ?></div>
-            <?php endif; ?>
-
-            <?php if (!$sucesso): ?>
-            <form method="POST" class="atm-form">
-                <div class="atm-field">
-                    <label>Entidade</label>
-                    <input type="text" name="entidade" maxlength="10" required>
-                </div>
-                <div class="atm-field">
-                    <label>Referência</label>
-                    <input type="text" name="referencia" maxlength="20" required>
-                </div>
-                <div class="atm-field">
-                    <label>Valor (€)</label>
-                    <input type="number" name="valor" step="0.01" min="0.01" required>
-                </div>
-                <button type="submit" class="atm-btn">Pagar</button>
-            </form>
-            <?php endif; ?>
-
-            <a href="menu.php" class="atm-btn atm-btn-secondary">Voltar ao Menu</a>
-        </div>
-
-        <div class="atm-footer">
-            <p>Pagamento de serviços - Entidade, Referência e Valor</p>
+<body class="atm-bg">
+    <div class="atm-container">
+        <div class="atm-screen">
+            <div class="atm-header">
+                <h1>DevBank</h1>
+                <p>Pagamento de Serviços</p>
+            </div>
+            <div class="atm-body">
+                <?php if ($sucesso): ?>
+                    <div class="alert alert-success"><?= htmlspecialchars($sucesso) ?></div>
+                    <a href="menu.php" class="btn btn-atm">Voltar ao Menu</a>
+                <?php else: ?>
+                    <?php if ($erro): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
+                    <?php endif; ?>
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="tipo_pagamento">Tipo de Pagamento</label>
+                            <select id="tipo_pagamento" name="tipo_pagamento" class="atm-input" required>
+                                <option value="">Selecione...</option>
+                                <option value="Luz">Luz</option>
+                                <option value="Água">Água</option>
+                                <option value="Lixo">Lixo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="referencia">Referência</label>
+                            <input type="text" id="referencia" name="referencia" class="atm-input" placeholder="123456789" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="valor">Valor (€)</label>
+                            <input type="text" id="valor" name="valor" class="atm-input" placeholder="0.00" required>
+                        </div>
+                        <button type="submit" class="btn btn-atm">Pagar</button>
+                    </form>
+                    <a href="menu.php" class="btn btn-atm btn-atm-secondary">Cancelar</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </body>

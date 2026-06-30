@@ -1,60 +1,90 @@
 <?php
-
 class Cartao
 {
     private int $id;
-    private int $conta_id;
-    private string $numero_cartao;
-    private string $pin_encriptado;
+    private int $contaId;
+    private string $numeroCartao;
+    private string $pinEncriptado;
+    private string $pin;
     private string $estado;
     private string $validade;
 
-    public function __construct(int $id, int $conta_id, string $numero_cartao, string $pin_encriptado, string $estado, string $validade)
+    public function __construct(int $contaId, string $numeroCartao, string $pin, string $validade)
     {
-        $this->id = $id;
-        $this->conta_id = $conta_id;
-        $this->numero_cartao = $numero_cartao;
-        $this->pin_encriptado = $pin_encriptado;
-        $this->estado = $estado;
+        $this->contaId = $contaId;
+        $this->numeroCartao = $numeroCartao;
+        $this->pin = $pin;
+        $this->pinEncriptado = password_hash($pin, PASSWORD_DEFAULT);
+        $this->estado = 'ativo';
         $this->validade = $validade;
     }
 
-    public function getId(): int { return $this->id; }
-    public function getContaId(): int { return $this->conta_id; }
-    public function getNumeroCartao(): string { return $this->numero_cartao; }
-    public function getEstado(): string { return $this->estado; }
-    public function isAtivo(): bool { return $this->estado === 'ativo'; }
-
-    public function validarPin(string $pin): bool
+    public function getId(): int
     {
-        return password_verify($pin, $this->pin_encriptado);
+        return $this->id;
     }
 
-    public static function buscarPorNumero(string $numero_cartao): ?self
+    public function getContaId(): int
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM cartoes WHERE numero_cartao = :numero_cartao AND estado = 'ativo'");
-        $stmt->execute([':numero_cartao' => $numero_cartao]);
-        $dados = $stmt->fetch();
-
-        if (!$dados) return null;
-
-        return new self(
-            (int)$dados['id'],
-            (int)$dados['conta_id'],
-            $dados['numero_cartao'],
-            $dados['pin_encriptado'],
-            $dados['estado'],
-            $dados['validade']
-        );
+        return $this->contaId;
     }
 
-    public static function gerarNumerosCartao(): string
+    public function getNumeroCartao(): string
     {
-        $numero = '';
-        for ($i = 0; $i < 16; $i++) {
-            $numero .= random_int(0, 9);
-        }
+        return $this->numeroCartao;
+    }
+
+    public function getPin(): string
+    {
+        return $this->pin;
+    }
+
+    public function getEstado(): string
+    {
+        return $this->estado;
+    }
+
+    public function getValidade(): string
+    {
+        return $this->validade;
+    }
+
+    public function salvar(PDO $db): bool
+    {
+        $stmt = $db->prepare("INSERT INTO cartoes (conta_id, numero_cartao, pin_encriptado, pin, estado, validade) VALUES (:conta_id, :numero_cartao, :pin_encriptado, :pin, :estado, :validade)");
+        $stmt->bindParam(':conta_id', $this->contaId, PDO::PARAM_INT);
+        $stmt->bindParam(':numero_cartao', $this->numeroCartao);
+        $stmt->bindParam(':pin_encriptado', $this->pinEncriptado);
+        $stmt->bindParam(':pin', $this->pin);
+        $stmt->bindParam(':estado', $this->estado);
+        $stmt->bindParam(':validade', $this->validade);
+        return $stmt->execute();
+    }
+
+    public static function gerarNumeroCartao(PDO $db): string
+    {
+        do {
+            $numero = '';
+            for ($i = 0; $i < 16; $i++) {
+                $numero .= random_int(0, 9);
+            }
+            $stmt = $db->prepare("SELECT COUNT(*) FROM cartoes WHERE numero_cartao = :numero");
+            $stmt->bindParam(':numero', $numero);
+            $stmt->execute();
+        } while ($stmt->fetchColumn() > 0);
+
+        return $numero;
+    }
+
+    public static function gerarNumeroConta(PDO $db): string
+    {
+        do {
+            $numero = 'PT50' . str_pad((string)random_int(1, 9999), 4, '0', STR_PAD_LEFT) . str_pad((string)random_int(1, 999999999), 9, '0', STR_PAD_LEFT);
+            $stmt = $db->prepare("SELECT COUNT(*) FROM contas WHERE numero_conta = :numero");
+            $stmt->bindParam(':numero', $numero);
+            $stmt->execute();
+        } while ($stmt->fetchColumn() > 0);
+
         return $numero;
     }
 }

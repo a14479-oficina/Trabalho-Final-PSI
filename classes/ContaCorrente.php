@@ -1,11 +1,10 @@
 <?php
-
 require_once __DIR__ . '/Conta.php';
 
 class ContaCorrente extends Conta
 {
-    public function podeLevantar(float $valor): bool
+    public function __construct(int $utilizadorId, string $numeroConta, float $saldo = 0.00)
     {
-        return $this->saldo >= $valor;
+        parent::__construct($utilizadorId, $numeroConta, 'corrente', $saldo);
     }
 }

@@ -1,131 +1,103 @@
 <?php
+require_once __DIR__ . '/HistoricoTrait.php';
 
-require_once __DIR__ . '/../traits/HistoricoTrait.php';
-
-// Not loaded here - loaded lazily in factory() to avoid circular deps
-
-abstract class Conta
+class Conta
 {
     use HistoricoTrait;
 
     protected int $id;
-    protected int $utilizador_id;
-    protected string $numero_conta;
-    protected string $tipo_conta;
+    protected int $utilizadorId;
+    protected string $numeroConta;
+    protected string $tipoConta;
     protected float $saldo;
 
-    public function __construct(int $id, int $utilizador_id, string $numero_conta, string $tipo_conta, float $saldo)
+    public function __construct(int $utilizadorId, string $numeroConta, string $tipoConta, float $saldo = 0.00)
     {
-        $this->id = $id;
-        $this->utilizador_id = $utilizador_id;
-        $this->numero_conta = $numero_conta;
-        $this->tipo_conta = $tipo_conta;
+        $this->utilizadorId = $utilizadorId;
+        $this->numeroConta = $numeroConta;
+        $this->tipoConta = $tipoConta;
         $this->saldo = $saldo;
     }
 
-    public function getId(): int { return $this->id; }
-    public function getUtilizadorId(): int { return $this->utilizador_id; }
-    public function getNumeroConta(): string { return $this->numero_conta; }
-    public function getTipo(): string { return $this->tipo_conta; }
-    public function getSaldo(): float { return $this->saldo; }
-
-    public static function buscarPorId(int $id): ?self
+    public function getId(): int
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM contas WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        $dados = $stmt->fetch();
-
-        if (!$dados) return null;
-
-        return self::factory($dados);
+        return $this->id;
     }
 
-    public static function buscarPorNumero(string $numero_conta): ?self
+    public function setId(int $id): void
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM contas WHERE numero_conta = :numero_conta");
-        $stmt->execute([':numero_conta' => $numero_conta]);
-        $dados = $stmt->fetch();
-
-        if (!$dados) return null;
-
-        return self::factory($dados);
+        $this->id = $id;
     }
 
-    public static function listarPorUtilizador(int $utilizador_id): array
+    public function getUtilizadorId(): int
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM contas WHERE utilizador_id = :utilizador_id ORDER BY id DESC");
-        $stmt->execute([':utilizador_id' => $utilizador_id]);
-        $contas = [];
-        while ($dados = $stmt->fetch()) {
-            $contas[] = self::factory($dados);
-        }
-        return $contas;
+        return $this->utilizadorId;
     }
 
-    public static function listarTodas(): array
+    public function getNumeroConta(): string
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare(
-            "SELECT c.*, u.nome AS utilizador_nome FROM contas c INNER JOIN utilizadores u ON c.utilizador_id = u.id ORDER BY c.id DESC"
-        );
-        $stmt->execute();
-        return $stmt->fetchAll();
+        return $this->numeroConta;
     }
 
-    private static function factory(array $dados): self
+    public function getTipoConta(): string
     {
-        if ($dados['tipo_conta'] === 'poupanca') {
-            require_once __DIR__ . '/ContaPoupanca.php';
-            return new ContaPoupanca(
-                (int)$dados['id'],
-                (int)$dados['utilizador_id'],
-                $dados['numero_conta'],
-                $dados['tipo_conta'],
-                (float)$dados['saldo']
-            );
-        }
-        require_once __DIR__ . '/ContaCorrente.php';
-        return new ContaCorrente(
-            (int)$dados['id'],
-            (int)$dados['utilizador_id'],
-            $dados['numero_conta'],
-            $dados['tipo_conta'],
-            (float)$dados['saldo']
-        );
+        return $this->tipoConta;
     }
 
-    public function creditar(float $valor): bool
+    public function getSaldo(): float
     {
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("UPDATE contas SET saldo = saldo + :valor WHERE id = :id");
-        $result = $stmt->execute([':valor' => $valor, ':id' => $this->id]);
-        if ($result) {
-            $this->saldo += $valor;
-        }
-        return $result;
+        return $this->saldo;
     }
 
-    public function debitar(float $valor): bool
+    public function setSaldo(float $saldo): void
     {
-        if ($this->saldo < $valor) {
+        $this->saldo = $saldo;
+    }
+
+    public function salvar(PDO $db): bool
+    {
+        $stmt = $db->prepare("INSERT INTO contas (utilizador_id, numero_conta, tipo_conta, saldo) VALUES (:utilizador_id, :numero_conta, :tipo_conta, :saldo)");
+        $stmt->bindParam(':utilizador_id', $this->utilizadorId, PDO::PARAM_INT);
+        $stmt->bindParam(':numero_conta', $this->numeroConta);
+        $stmt->bindParam(':tipo_conta', $this->tipoConta);
+        $stmt->bindParam(':saldo', $this->saldo);
+        return $stmt->execute();
+    }
+
+    public function levantar(PDO $db, float $valor): bool
+    {
+        if ($valor <= 0) {
             return false;
         }
-        $db = \Database::getConnection();
-        $stmt = $db->prepare("UPDATE contas SET saldo = saldo - :valor WHERE id = :id");
-        $result = $stmt->execute([':valor' => $valor, ':id' => $this->id]);
-        if ($result) {
-            $this->saldo -= $valor;
+
+        $stmt = $db->prepare("UPDATE contas SET saldo = saldo - :valor WHERE id = :id AND saldo >= :valor2");
+        $stmt->bindParam(':valor', $valor);
+        $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
+        $stmt->bindParam(':valor2', $valor);
+        $stmt->execute();
+
+        if ($stmt->rowCount() === 0) {
+            return false;
         }
-        return $result;
+
+        $this->saldo -= $valor;
+        $this->registrarTransacao($db, $this->id, null, 'levantamento', $valor);
+        return true;
     }
 
-    public abstract function podeLevantar(float $valor): bool;
-
-    public function obterExtrato(int $limite = 5): array
+    public function depositar(PDO $db, float $valor): bool
     {
-        return $this->obterMovimentos($this->id, $limite);
+        if ($valor <= 0) {
+            return false;
+        }
+
+        $stmt = $db->prepare("UPDATE contas SET saldo = saldo + :valor WHERE id = :id");
+        $stmt->bindParam(':valor', $valor);
+        $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $this->saldo += $valor;
+        $this->registrarTransacao($db, null, $this->id, 'deposito', $valor);
+        return true;
     }
 }

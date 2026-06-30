@@ -5,69 +5,76 @@ if (!isset($_SESSION['conta_id'])) {
     exit;
 }
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../classes/Conta.php';
-require_once __DIR__ . '/../traits/HistoricoTrait.php';
+require_once __DIR__ . '/../classes/Database.php';
 
-$conta = Conta::buscarPorId($_SESSION['conta_id']);
+$db = Database::conectar();
+$contaId = $_SESSION['conta_id'];
 
-if (!$conta) {
-    header('Location: index.php');
-    exit;
-}
+$stmt = $db->prepare("SELECT c.*, u.nome as titular FROM contas c JOIN utilizadores u ON c.utilizador_id = u.id WHERE c.id = :id");
+$stmt->bindParam(':id', $contaId, PDO::PARAM_INT);
+$stmt->execute();
+$conta = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$movimentos = $conta->obterExtrato(5);
-$saldo = $conta->getSaldo();
+$stmtMov = $db->prepare("SELECT * FROM transacoes WHERE conta_origem_id = :id OR conta_destino_id = :id2 ORDER BY data_movimento DESC LIMIT 5");
+$stmtMov->bindParam(':id', $contaId, PDO::PARAM_INT);
+$stmtMov->bindParam(':id2', $contaId, PDO::PARAM_INT);
+$stmtMov->execute();
+$movimentos = $stmtMov->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevBank - Saldo</title>
-    <link rel="stylesheet" href="../css/atm.css">
+    <title>DevBank - Saldo e Movimentos</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="atm-body">
-    <div class="atm-screen">
-        <div class="atm-header">
-            <h1>DevBank</h1>
-            <p>Conta: <?= htmlspecialchars($conta->getNumeroConta()) ?></p>
-        </div>
-
-        <div class="atm-display">
-            <h2>Consulta de Saldo</h2>
-
-            <div class="saldo-box">
-                <span class="saldo-label">Saldo Atual</span>
-                <span class="saldo-valor"><?= number_format($saldo, 2, ',', '.') ?> €</span>
+<body class="atm-bg">
+    <div class="atm-container">
+        <div class="atm-screen">
+            <div class="atm-header">
+                <h1>DevBank</h1>
+                <p>Consulta de Saldo</p>
             </div>
+            <div class="atm-body">
+                <div class="saldo-card">
+                    <p class="saldo-label">Saldo Atual</p>
+                    <p class="saldo-value"><?= number_format($conta['saldo'], 2, ',', ' ') ?> €</p>
+                    <p class="saldo-titular">Titular: <?= htmlspecialchars($conta['titular']) ?></p>
+                    <p class="saldo-conta">Conta: <?= htmlspecialchars($conta['numero_conta']) ?> (<?= ucfirst($conta['tipo_conta']) ?>)</p>
+                </div>
 
-            <h3>Últimos Movimentos</h3>
+                <h3>Últimos Movimentos</h3>
+                <div class="table-responsive">
+                    <table class="table table-atm">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($movimentos)): ?>
+                                <tr><td colspan="3" class="text-center">Nenhum movimento encontrado.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($movimentos as $mov): ?>
+                                    <tr>
+                                        <td><?= ucfirst($mov['tipo_transacao']) ?></td>
+                                        <td class="<?= $mov['conta_origem_id'] == $contaId ? 'valor-negativo' : 'valor-positivo' ?>">
+                                            <?= $mov['conta_origem_id'] == $contaId ? '-' : '+' ?>
+                                            <?= number_format($mov['valor'], 2, ',', ' ') ?> €
+                                        </td>
+                                        <td><?= date('d/m/Y H:i', strtotime($mov['data_movimento'])) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="movimentos-list">
-                <?php if (empty($movimentos)): ?>
-                    <p class="text-center">Nenhum movimento registado.</p>
-                <?php else: ?>
-                    <?php foreach ($movimentos as $mov): ?>
-                    <div class="movimento-item">
-                        <div class="movimento-info">
-                            <span class="movimento-tipo"><?= ucfirst($mov['tipo_transacao']) ?></span>
-                            <span class="movimento-data"><?= date('d/m/Y H:i', strtotime($mov['data_movimento'])) ?></span>
-                        </div>
-                        <div class="movimento-valor <?= $mov['direcao'] === 'saida' ? 'negativo' : 'positivo' ?>">
-                            <?= $mov['direcao'] === 'saida' ? '-' : '+' ?>
-                            <?= number_format($mov['valor'], 2, ',', '.') ?> €
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <a href="menu.php" class="btn btn-atm">Voltar ao Menu</a>
             </div>
-
-            <a href="menu.php" class="atm-btn">Voltar</a>
-        </div>
-
-        <div class="atm-footer">
-            <p>Devolução do cartão em curso...</p>
         </div>
     </div>
 </body>

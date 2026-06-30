@@ -7,53 +7,41 @@ if (!isset($_SESSION['conta_id'])) {
 
 require_once __DIR__ . '/../classes/Database.php';
 require_once __DIR__ . '/../classes/Conta.php';
-require_once __DIR__ . '/../classes/ContaCorrente.php';
-require_once __DIR__ . '/../classes/ContaPoupanca.php';
 
 $db = Database::conectar();
 $contaId = $_SESSION['conta_id'];
-$tipoConta = $_SESSION['tipo_conta'];
 $erro = '';
 $sucesso = '';
+
+$stmt = $db->prepare("SELECT id, saldo FROM contas WHERE id = :id");
+$stmt->bindParam(':id', $contaId, PDO::PARAM_INT);
+$stmt->execute();
+$dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$conta = new Conta(0, '', '');
+$conta->setId((int)$dados['id']);
+$conta->setSaldo((float)$dados['saldo']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $valor = str_replace(',', '.', $_POST['valor'] ?? '0');
     $valor = (float)$valor;
 
     if ($valor <= 0) {
-        $erro = 'Valor inválido.';
-    } elseif ($valor > 500) {
-        $erro = 'Limite máximo de 500 € por levantamento.';
+        $erro = 'Insira um valor válido.';
     } else {
-        $stmt = $db->prepare("SELECT * FROM contas WHERE id = :id");
-        $stmt->bindParam(':id', $contaId, PDO::PARAM_INT);
-        $stmt->execute();
-        $dadosConta = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $db->beginTransaction();
 
-        if (!$dadosConta) {
-            $erro = 'Conta não encontrada.';
-        } else {
-            if ($tipoConta === 'poupanca') {
-                $conta = new ContaPoupanca($dadosConta['utilizador_id'], $dadosConta['numero_conta'], (float)$dadosConta['saldo']);
+            if ($conta->depositar($db, $valor)) {
+                $db->commit();
+                $sucesso = 'Depósito de ' . number_format($valor, 2, ',', ' ') . ' € realizado com sucesso!';
             } else {
-                $conta = new ContaCorrente($dadosConta['utilizador_id'], $dadosConta['numero_conta'], (float)$dadosConta['saldo']);
-            }
-            $conta->setId((int)$dadosConta['id']);
-
-            try {
-                $db->beginTransaction();
-
-                if ($conta->levantar($db, $valor)) {
-                    $db->commit();
-                    $sucesso = 'Levantamento de ' . number_format($valor, 2, ',', ' ') . ' € realizado com sucesso!';
-                } else {
-                    $db->rollBack();
-                    $erro = 'Saldo insuficiente ou valor excede o limite permitido.';
-                }
-            } catch (Exception $e) {
                 $db->rollBack();
-                $erro = 'Erro ao realizar levantamento: ' . $e->getMessage();
+                $erro = 'Erro ao realizar depósito.';
             }
+        } catch (Exception $e) {
+            $db->rollBack();
+            $erro = 'Erro ao processar depósito: ' . $e->getMessage();
         }
     }
 }
@@ -63,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevBank - Levantamento</title>
+    <title>DevBank - Depósito</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="atm-bg">
@@ -71,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="atm-screen">
             <div class="atm-header">
                 <h1>DevBank</h1>
-                <p>Levantamento</p>
+                <p>Depósito</p>
             </div>
             <div class="atm-body">
                 <?php if ($sucesso): ?>
@@ -81,12 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php if ($erro): ?>
                         <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
                     <?php endif; ?>
+                    <p>Saldo atual: <strong><?= number_format($conta->getSaldo(), 2, ',', ' ') ?> €</strong></p>
                     <form method="POST">
                         <div class="form-group">
-                            <label for="valor">Valor a Levantar (€)</label>
+                            <label for="valor">Valor a depositar (€)</label>
                             <input type="text" id="valor" name="valor" class="atm-input" placeholder="0.00" required>
                         </div>
-                        <button type="submit" class="btn btn-atm">Levantar</button>
+                        <button type="submit" class="btn btn-atm">Depositar</button>
                     </form>
                     <a href="menu.php" class="btn btn-atm btn-atm-secondary">Cancelar</a>
                 <?php endif; ?>
