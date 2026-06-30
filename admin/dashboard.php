@@ -11,7 +11,8 @@ require_once __DIR__ . '/../classes/Admin.php';
 $db = Database::conectar();
 $admin = new Admin('', '', '');
 
-$stmt = $db->query("SELECT id, nome, nif, email, criado_em FROM utilizadores WHERE tipo_utilizador = 'cliente' ORDER BY criado_em DESC");
+$stmt = $db->prepare("SELECT id, nome, nif, email, criado_em FROM utilizadores WHERE tipo_utilizador = :tipo ORDER BY criado_em DESC");
+$stmt->execute([':tipo' => 'cliente']);
 $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $mensagem = '';

@@ -15,14 +15,12 @@ $erro = '';
 $sucesso = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tipoPagamento = $_POST['tipo_pagamento'] ?? '';
+    $entidade = trim($_POST['entidade'] ?? '');
     $referencia = trim($_POST['referencia'] ?? '');
     $valor = str_replace(',', '.', $_POST['valor'] ?? '0');
     $valor = (float)$valor;
 
-    $tiposValidos = ['Luz', 'Água', 'Lixo'];
-
-    if (!in_array($tipoPagamento, $tiposValidos) || empty($referencia) || $valor <= 0) {
+    if (empty($entidade) || empty($referencia) || $valor <= 0) {
         $erro = 'Preencha todos os campos corretamente.';
     } else {
         try {
@@ -42,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtUpd->bindParam(':id', $contaId, PDO::PARAM_INT);
                 $stmtUpd->execute();
 
-                $descricao = 'Pagamento - ' . $tipoPagamento . ' Ref: ' . $referencia;
+                $descricao = 'Pagamento - Ent: ' . $entidade . ' Ref: ' . $referencia;
                 $stmtTrans = $db->prepare("INSERT INTO transacoes (conta_origem_id, tipo_transacao, valor) VALUES (:id, 'transferencia', :valor)");
                 $stmtTrans->bindParam(':id', $contaId, PDO::PARAM_INT);
                 $stmtTrans->bindParam(':valor', $valor);
                 $stmtTrans->execute();
 
                 $db->commit();
-                $sucesso = 'Pagamento de ' . $tipoPagamento . ' no valor de ' . number_format($valor, 2, ',', ' ') . ' € realizado com sucesso!';
+                $sucesso = 'Pagamento no valor de ' . number_format($valor, 2, ',', ' ') . ' € realizado com sucesso!';
             }
         } catch (Exception $e) {
             $db->rollBack();
@@ -83,13 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                     <form method="POST">
                         <div class="form-group">
-                            <label for="tipo_pagamento">Tipo de Pagamento</label>
-                            <select id="tipo_pagamento" name="tipo_pagamento" class="atm-input" required>
-                                <option value="">Selecione...</option>
-                                <option value="Luz">Luz</option>
-                                <option value="Água">Água</option>
-                                <option value="Lixo">Lixo</option>
-                            </select>
+                            <label for="entidade">Entidade</label>
+                            <input type="text" id="entidade" name="entidade" class="atm-input" placeholder="12345" required maxlength="5">
                         </div>
                         <div class="form-group">
                             <label for="referencia">Referência</label>
