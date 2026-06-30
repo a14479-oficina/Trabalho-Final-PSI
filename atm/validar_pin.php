@@ -55,18 +55,34 @@ if ($erro) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>DevBank - Erro</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="../assets/css/style.css">
     </head>
-    <body class="atm-bg">
-        <div class="atm-container">
-            <div class="atm-screen">
-                <div class="atm-header">
-                    <h1>DevBank</h1>
-                    <p>Caixa Multibanco</p>
+    <body class="bg-gradient-to-br from-[#0a1628] via-[#0f1f3d] to-[#162d50] min-h-screen flex items-center justify-center p-4">
+        <div class="atm-machine">
+            <div class="atm-brand">DevBank</div>
+            <div class="atm-screen-border">
+                <div class="atm-screen-inner">
+                    <div class="text-center mb-6 pb-4 border-b border-white/5">
+                        <h1 class="text-white text-lg font-bold">DevBank</h1>
+                        <p class="text-white/30 text-xs mt-1">Caixa Multibanco</p>
+                    </div>
+                    <div class="min-h-[200px]">
+                        <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
+                        <a href="index.php" class="btn btn-atm">Tentar Novamente</a>
+                    </div>
                 </div>
-                <div class="atm-body">
-                    <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
-                    <a href="index.php" class="btn btn-atm">Tentar Novamente</a>
+            </div>
+            <div class="atm-bottom">
+                <div class="atm-btn-side">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="atm-card-slot">
+                    <div class="atm-slot"></div>
+                    <span class="atm-slot-label">Leitor de Cartão</span>
+                </div>
+                <div class="atm-btn-side">
+                    <span></span><span></span><span></span>
                 </div>
             </div>
         </div>
@@ -84,27 +100,41 @@ if (isset($_SESSION['aguardar_pin'])) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>DevBank - Digite o PIN</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="../assets/css/style.css">
     </head>
-    <body class="atm-bg">
-        <div class="atm-container">
-            <div class="atm-screen">
-                <div class="atm-header">
-                    <h1>DevBank</h1>
-                    <p>Caixa Multibanco</p>
+    <body class="bg-gradient-to-br from-[#0a1628] via-[#0f1f3d] to-[#162d50] min-h-screen flex items-center justify-center p-4">
+        <div class="atm-machine">
+            <div class="atm-brand">DevBank</div>
+            <div class="atm-screen-border">
+                <div class="atm-screen-inner">
+                    <div class="text-center mb-6 pb-4 border-b border-white/5">
+                        <h1 class="text-white text-lg font-bold">DevBank</h1>
+                        <p class="text-white/30 text-xs mt-1">Caixa Multibanco</p>
+                    </div>
+                    <div class="min-h-[200px]">
+                        <h2>Digite o seu PIN</h2>
+                        <form method="POST">
+                            <div class="form-group">
+                                <label for="pin">PIN (4 dígitos)</label>
+                                <input type="password" id="pin" name="pin" maxlength="4" pattern="\d{4}" class="atm-input atm-pin" inputmode="numeric" autocomplete="off" required>
+                            </div>
+                            <button type="submit" class="btn btn-atm">Confirmar</button>
+                        </form>
+                        <a href="index.php" class="atm-link">Cancelar</a>
+                    </div>
                 </div>
-                <div class="atm-body">
-                    <h2>Digite o seu PIN</h2>
-                    <form method="POST">
-                        <div class="form-group">
-                            <label for="pin">PIN (4 dígitos)</label>
-                            <input type="password" id="pin" name="pin" maxlength="4" pattern="\d{4}" class="atm-input atm-pin" inputmode="numeric" autocomplete="off" required>
-                        </div>
-                        <button type="submit" class="btn btn-atm">Confirmar</button>
-                    </form>
+            </div>
+            <div class="atm-bottom">
+                <div class="atm-btn-side">
+                    <span></span><span></span><span></span>
                 </div>
-                <div class="atm-footer">
-                    <a href="index.php" class="atm-link">Cancelar</a>
+                <div class="atm-card-slot">
+                    <div class="atm-slot"></div>
+                    <span class="atm-slot-label">Leitor de Cartão</span>
+                </div>
+                <div class="atm-btn-side">
+                    <span></span><span></span><span></span>
                 </div>
             </div>
         </div>

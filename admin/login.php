@@ -35,20 +35,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevBank - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="admin-bg">
     <div class="login-container">
         <div class="login-card">
-            <h1>DevBank</h1>
-            <h2>Iniciar Sessão</h2>
+            <div class="text-center mb-6">
+                <h1>DevBank</h1>
+                <h2>Iniciar Sessão</h2>
+            </div>
             <?php if (isset($erro)): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
             <?php endif; ?>
             <form method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="exemplo@gmail.com" required>
+                    <input type="email" id="email" name="email" placeholder="admin@devbank.pt" required>
                 </div>
                 <div class="form-group">
                     <label for="palavra_passe">Palavra-passe</label>
@@ -56,7 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Entrar</button>
             </form>
-            <a href="../index.php" class="back-link">Voltar ao Início</a>
+            <div class="text-center mt-6">
+                <a href="../index.php" class="back-link">Voltar ao Início</a>
+            </div>
+            <div class="mt-6 p-4 bg-[#f0f9ff] rounded-xl border border-[#bae6fd] text-xs text-[#0c4a6e] leading-relaxed">
+                <strong>Credenciais de teste:</strong><br>
+                Admin: admin@devbank.pt / gpsi12<br>
+                Clientes: gpsi12<br>
+                PIN ATM: 1234
+            </div>
         </div>
     </div>
 </body>

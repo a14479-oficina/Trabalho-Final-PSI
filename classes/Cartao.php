@@ -5,7 +5,6 @@ class Cartao
     private int $contaId;
     private string $numeroCartao;
     private string $pinEncriptado;
-    private string $pin;
     private string $estado;
     private string $validade;
 
@@ -13,7 +12,6 @@ class Cartao
     {
         $this->contaId = $contaId;
         $this->numeroCartao = $numeroCartao;
-        $this->pin = $pin;
         $this->pinEncriptado = password_hash($pin, PASSWORD_DEFAULT);
         $this->estado = 'ativo';
         $this->validade = $validade;
@@ -34,11 +32,6 @@ class Cartao
         return $this->numeroCartao;
     }
 
-    public function getPin(): string
-    {
-        return $this->pin;
-    }
-
     public function getEstado(): string
     {
         return $this->estado;
@@ -51,11 +44,10 @@ class Cartao
 
     public function salvar(PDO $db): bool
     {
-        $stmt = $db->prepare("INSERT INTO cartoes (conta_id, numero_cartao, pin_encriptado, pin, estado, validade) VALUES (:conta_id, :numero_cartao, :pin_encriptado, :pin, :estado, :validade)");
+        $stmt = $db->prepare("INSERT INTO cartoes (conta_id, numero_cartao, pin_encriptado, estado, validade) VALUES (:conta_id, :numero_cartao, :pin_encriptado, :estado, :validade)");
         $stmt->bindParam(':conta_id', $this->contaId, PDO::PARAM_INT);
         $stmt->bindParam(':numero_cartao', $this->numeroCartao);
         $stmt->bindParam(':pin_encriptado', $this->pinEncriptado);
-        $stmt->bindParam(':pin', $this->pin);
         $stmt->bindParam(':estado', $this->estado);
         $stmt->bindParam(':validade', $this->validade);
         return $stmt->execute();

@@ -26,9 +26,9 @@ try {
 
     require_once __DIR__ . '/classes/Admin.php';
 
-    $admin = new Admin('Admin', 'admin@admin', 'admin');
+    $admin = new Admin('Admin', 'admin@devbank.pt', 'gpsi12');
     $admin->salvar($pdo);
-    echo "[OK] Admin criado (email: admin@admin | password: admin)\n";
+    echo "[OK] Admin criado (email: admin@devbank.pt | password: gpsi12)\n";
 
     $hashCliente = password_hash('gpsi12', PASSWORD_DEFAULT);
     $hashPin = password_hash('1234', PASSWORD_DEFAULT);
@@ -44,7 +44,7 @@ try {
     $stmt->execute([3, 'PT5000020009876543210', 'corrente', 450.00]);
     echo "[OK] Contas criadas.\n";
 
-    $stmt = $pdo->prepare("INSERT INTO cartoes (conta_id, numero_cartao, pin_encriptado, pin, estado, validade) VALUES (?, ?, ?, '1234', 'ativo', ?)");
+    $stmt = $pdo->prepare("INSERT INTO cartoes (conta_id, numero_cartao, pin_encriptado, estado, validade) VALUES (?, ?, ?, 'ativo', ?)");
     $stmt->execute([1, '5044123456789012', $hashPin, '2030-12-31']);
     $stmt->execute([3, '5044987654321098', $hashPin, '2029-08-31']);
     echo "[OK] Cartões criados (PIN: 1234)\n";
@@ -55,7 +55,7 @@ try {
     echo "[OK] Transações iniciais registadas.\n";
 
     echo "\n=== Configuração concluída com sucesso! ===\n";
-    echo "Admin:  admin@admin / admin\n";
+    echo "Admin:  admin@devbank.pt / gpsi12\n";
     echo "Cartão: 5044123456789012 / PIN: 1234 (Conta: Ana Silva)\n";
     echo "Cartão: 5044987654321098 / PIN: 1234 (Conta: Rui Santos)\n\n";
 

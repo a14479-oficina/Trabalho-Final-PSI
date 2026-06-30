@@ -27,53 +27,69 @@ $movimentos = $stmtMov->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevBank - Saldo e Movimentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="atm-bg">
-    <div class="atm-container">
-        <div class="atm-screen">
-            <div class="atm-header">
-                <h1>DevBank</h1>
-                <p>Consulta de Saldo</p>
+<body class="bg-gradient-to-br from-[#0a1628] via-[#0f1f3d] to-[#162d50] min-h-screen flex items-center justify-center p-4">
+    <div class="atm-machine">
+        <div class="atm-brand">DevBank</div>
+        <div class="atm-screen-border">
+            <div class="atm-screen-inner">
+                <div class="text-center mb-6 pb-4 border-b border-white/5">
+                    <h1 class="text-white text-lg font-bold">DevBank</h1>
+                    <p class="text-white/30 text-xs mt-1">Consultar Saldo</p>
+                </div>
+                <div class="min-h-[200px]">
+                    <div class="saldo-card">
+                        <p class="saldo-label">Saldo Atual</p>
+                        <p class="saldo-value"><?= number_format($conta['saldo'], 2, ',', ' ') ?> €</p>
+                        <p class="saldo-titular">Titular: <?= htmlspecialchars($conta['titular']) ?></p>
+                        <p class="saldo-conta">Conta: <?= htmlspecialchars($conta['numero_conta']) ?> (<?= ucfirst($conta['tipo_conta']) ?>)</p>
+                    </div>
+
+                    <h3>Últimos Movimentos</h3>
+                    <div class="table-responsive">
+                        <table class="table table-atm">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($movimentos)): ?>
+                                    <tr><td colspan="3" class="text-center">Nenhum movimento encontrado.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($movimentos as $mov): ?>
+                                        <tr>
+                                            <td><?= ucfirst($mov['tipo_transacao']) ?></td>
+                                            <td class="<?= $mov['conta_origem_id'] == $contaId ? 'valor-negativo' : 'valor-positivo' ?>">
+                                                <?= $mov['conta_origem_id'] == $contaId ? '-' : '+' ?>
+                                                <?= number_format($mov['valor'], 2, ',', ' ') ?> €
+                                            </td>
+                                            <td><?= date('d/m/Y H:i', strtotime($mov['data_movimento'])) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <a href="menu.php" class="btn btn-atm">Voltar ao Menu</a>
+                </div>
             </div>
-            <div class="atm-body">
-                <div class="saldo-card">
-                    <p class="saldo-label">Saldo Atual</p>
-                    <p class="saldo-value"><?= number_format($conta['saldo'], 2, ',', ' ') ?> €</p>
-                    <p class="saldo-titular">Titular: <?= htmlspecialchars($conta['titular']) ?></p>
-                    <p class="saldo-conta">Conta: <?= htmlspecialchars($conta['numero_conta']) ?> (<?= ucfirst($conta['tipo_conta']) ?>)</p>
-                </div>
-
-                <h3>Últimos Movimentos</h3>
-                <div class="table-responsive">
-                    <table class="table table-atm">
-                        <thead>
-                            <tr>
-                                <th>Tipo</th>
-                                <th>Valor</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($movimentos)): ?>
-                                <tr><td colspan="3" class="text-center">Nenhum movimento encontrado.</td></tr>
-                            <?php else: ?>
-                                <?php foreach ($movimentos as $mov): ?>
-                                    <tr>
-                                        <td><?= ucfirst($mov['tipo_transacao']) ?></td>
-                                        <td class="<?= $mov['conta_origem_id'] == $contaId ? 'valor-negativo' : 'valor-positivo' ?>">
-                                            <?= $mov['conta_origem_id'] == $contaId ? '-' : '+' ?>
-                                            <?= number_format($mov['valor'], 2, ',', ' ') ?> €
-                                        </td>
-                                        <td><?= date('d/m/Y H:i', strtotime($mov['data_movimento'])) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <a href="menu.php" class="btn btn-atm">Voltar ao Menu</a>
+        </div>
+        <div class="atm-bottom">
+            <div class="atm-btn-side">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="atm-card-slot">
+                <div class="atm-slot"></div>
+                <span class="atm-slot-label">Leitor de Cartão</span>
+            </div>
+            <div class="atm-btn-side">
+                <span></span><span></span><span></span>
             </div>
         </div>
     </div>

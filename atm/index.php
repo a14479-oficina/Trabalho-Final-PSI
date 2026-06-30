@@ -9,28 +9,40 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevBank - Caixa Multibanco</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="atm-bg">
-    <div class="atm-container">
-        <div class="atm-screen">
-            <div class="atm-header">
-                <h1>DevBank</h1>
-                <p>Caixa Multibanco</p>
+<body class="bg-gradient-to-br from-[#0a1628] via-[#0f1f3d] to-[#162d50] min-h-screen flex items-center justify-center p-4">
+    <div class="atm-machine">
+        <div class="atm-brand">DevBank</div>
+        <div class="atm-screen-border">
+            <div class="atm-screen-inner">
+                <div class="text-center mb-6 pb-4 border-b border-white/5">
+                    <h1 class="text-white text-lg font-bold">DevBank</h1>
+                    <p class="text-white/30 text-xs mt-1">Caixa Multibanco</p>
+                </div>
+                <div class="min-h-[200px]">
+                    <h2>Inserir Cartão</h2>
+                    <form method="POST" action="validar_pin.php">
+                        <div class="form-group">
+                            <label for="numero_cartao">Número do Cartão (16 dígitos)</label>
+                            <input type="text" id="numero_cartao" name="numero_cartao" maxlength="16" pattern="\d{16}" placeholder="5044123456789012" class="atm-input" required>
+                        </div>
+                        <button type="submit" class="btn btn-atm">Inserir Cartão</button>
+                    </form>
+                </div>
             </div>
-            <div class="atm-body">
-                <h2>Inserir Cartão</h2>
-                <form method="POST" action="validar_pin.php">
-                    <div class="form-group">
-                        <label for="numero_cartao">Número do Cartão (16 dígitos)</label>
-                        <input type="text" id="numero_cartao" name="numero_cartao" maxlength="16" pattern="\d{16}" placeholder="5044123456789012" class="atm-input" required>
-                    </div>
-                    <button type="submit" class="btn btn-atm">Inserir Cartão</button>
-                </form>
+        </div>
+        <div class="atm-bottom">
+            <div class="atm-btn-side">
+                <span></span><span></span><span></span>
             </div>
-            <div class="atm-footer">
-                <p>Insira o seu cartão para continuar</p>
-                <a href="../index.php" class="atm-link">Voltar</a>
+            <div class="atm-card-slot">
+                <div class="atm-slot"></div>
+                <span class="atm-slot-label">Leitor de Cartão</span>
+            </div>
+            <div class="atm-btn-side">
+                <span></span><span></span><span></span>
             </div>
         </div>
     </div>
